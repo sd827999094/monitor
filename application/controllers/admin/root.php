@@ -116,6 +116,10 @@ class Root extends CI_Controller {
 			echo json_encode(array('s'=>'faild'));
 		}
 	}
+    //修改教师统一信息
+    public function alterteacher(){
+        $data = $this->input->post();
+    }
 } 
 
 /* End of file welcome.php */

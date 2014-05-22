@@ -42,7 +42,53 @@
 	<p>监考结束时间:<input type="text" value="" id="end_work_time" /></p>
 	<p><input type="button" value="提交" id="sub" />&nbsp;&nbsp;&nbsp;<input type="button" value="取消" id="cancel" /></p>
 </div>
+<div id='alterDemo' style="display:none">
+    <h4>统一修改项</h4>
+    <p>性别:<select name='selectSex' id='alterSex'>
+    <option value='1'>男</option>
+    <option value='2'>女</option>
+</select></p>
+    <p>系别:<input type='text' value='' id='alterDep' /></p>
+    <p>监考开始时间:<input type='text' value='' id='alterStartTime' /></p>
+    <p>监考结束时间:<input type='text' value='' id='alterEndTime' /></p>
+    <p><input type='button' value='修改' id='alter_sub' /><input type='button' value='取消' id='cancel_sub' /></p>
+</div>
 <script type="text/javascript">
+    $('#alter_sub').click(function(){
+        var sex = $('#alterSex option:selected').val();
+        var depart = $('#alterDep').val();
+        var start_t = $('alterStartTime').val();
+        var end_t = $('alterEndTime').val();
+
+        var data = {};
+        if (sex) {
+            data['sex'] = sex;
+        }
+        if (depart) {
+            data['department'] = depart;
+        }
+        if (start_t) {
+            data['start_work_time'] = start_t;
+        }
+        if (end_t) {
+            data['end_work_time'] = end_t;
+        }
+        $.ajax({
+            
+			dataType: 'json',
+			type:'post',
+			url:'<?php echo base_url('index.php')."/admin/root/alterteacher"; ?>',
+			data:data,
+			success: function(data){
+                if (data.s == 'ok') {
+                    alter('修改成功!');
+                }else {
+                    alter('修改失败!');
+                }
+            }
+        });
+
+    });
 	$('#addTeacher').click(function(){
 		 $('.bg').slideToggle('slow');
 
@@ -52,6 +98,10 @@
 		$('.bg').fadeOut(800);
         $('#addDemo').fadeOut(800);
 	});
+    $('#cancel_sub').click(function(){
+        $('.bg').fadeOut(800);
+        $('#alterDemo').fadeOut(800);
+    });
 	$('.bg').click(function(){
 		$('.bg').fadeOut(800);
         $('#addDemo').fadeOut(800);
@@ -125,9 +175,25 @@
 			alert('请选择要删除的条目!');
 		}
 	});
+    $('#change').bind('click', function(){
+        var alter_id = '';
+        var alter_teacher = '';
+        var alter_post = {};
+        $('.one').each(function(data){
+            if ($(this).prop('checked')) {
+				alter_id += $(this).val() +',';
+            }
+        });
+        if (alter_id) {
+            $('.bg').slideToggle('slow');
+            $('#alterDemo').slideToggle('slow');
+        }else {
+            alert('请选择要统一修改项!');
+        }
+    });
 </script>
 <style type="text/css">
-	#addDemo{
+	#addDemo, #alterDemo{
        display: none;
     width: 550px;
     height: 325px;
