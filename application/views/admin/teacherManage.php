@@ -171,10 +171,12 @@
 				del_id += $(this).val() +',';
 			}
 		});
+		
 		if (del_id) {
 			var dum = confirm("确定删除选中的条目?");
 			if (dum) {
 				del_id = del_id.substr(0, del_id.lastIndexOf(','));
+				
 				del_post['del_id'] = del_id;
 				$.post('<?php echo base_url('index.php').'/admin/root/delTeacher'; ?>',
 					del_post,

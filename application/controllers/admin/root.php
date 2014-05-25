@@ -43,7 +43,7 @@ class Root extends CI_Controller {
 		if (!isset($sess['user_name']) || !isset($sess['user_pass'])) {
 			$user = $this->input->post();
 		
-			$res = $this->root_model->get($user['user_name'], $user['user_pass']);
+			$res = $this->root_model->get($user['user_name'], $user['user_pass'], 'admin');
 			if ($res) {
 				$this->session->set_userdata($user);
 				$this->load->view('admin/list');
@@ -52,11 +52,11 @@ class Root extends CI_Controller {
 				$this->arr['error'] = 'error';
 				
 				$this->load->view('admin/rootMain', $this->arr);
-				return;
+				
 			}
 			
 		} else {
-			$res = $this->root_model->get($sess['user_name'], $sess['user_pass']);
+			$res = $this->root_model->get($sess['user_name'], $sess['user_pass'], 'admin');
 			if ($res) {
 				$this->load->view('admin/list');
 				
@@ -64,10 +64,10 @@ class Root extends CI_Controller {
 				$this->arr['error'] = 'error';
 				
 				$this->load->view('admin/rootMain', $this->arr);
-				return;
+				
 			}
 		}
-		
+		$this->load->view('footer/footer');
 		
 		
 	}
@@ -84,7 +84,7 @@ class Root extends CI_Controller {
 		}
 		$this->arr['title'] = '教师管理页面';
 		$this->arr['page'] = $page?$page:1;
-		$page = ($page-1)*$limit;
+		$page = ($this->arr['page']-1)*$limit;
 		$this->arr['teacherInfo'] = $this->root_model->getInfo($page, $limit, 'teacher');
 		$this->arr['limit'] = $limit;
 		$this->load->view('header/header', $this->arr);
@@ -98,14 +98,16 @@ class Root extends CI_Controller {
 		$teacherInfo['end_work_time'] = $teacherInfo['end_work_time'] ? $teacherInfo['end_work_time'] : 0;
 		$teacherInfo['start_work_time'] = strtotime($teacherInfo['start_work_time']);
 		$teacherInfo['end_work_time'] = strtotime($teacherInfo['end_work_time']);
-		
+		$hash = 'monitor';
+		$pass = md5('123456'.$hash);
 		$data = array(
 				'teacher_id' => $teacherInfo['teacherId'],
 				'name' => $teacherInfo['teacherName'],
 				'sex' => $teacherInfo['sex'],
 				'department' => $teacherInfo['department'],
 				'start_work_time' => $teacherInfo['start_work_time'],
-				'end_work_time' => $teacherInfo['end_work_time']
+				'end_work_time' => $teacherInfo['end_work_time'],
+				'teacher_pass' => $pass,
 			);
 		$res = $this->root_model->insertInfo($data, 'teacher');
 		if($res) {
@@ -140,7 +142,10 @@ class Root extends CI_Controller {
 	//删除教师
 	public function delTeacher(){
 		$del_id = $this->input->post();
-		$res = $this->root_model->del('teacher','teacher_id',$del_id);
+		
+		$arr_del = explode(',', $del_id['del_id']);
+		
+		$res = $this->root_model->del('teacher','teacher_id',$arr_del);
 		if ($res) {
 			echo json_encode(array('s'=>'ok'));
 		}else {
@@ -150,6 +155,7 @@ class Root extends CI_Controller {
 	//删除教室
 	public function delClass() {
 		$del_id = $this->input->post();
+		$arr_del = explode(',', $del_id['del_id']);
 		$res = $this->root_model->del('room', 'id', $del_id);
 		if ($res) {
 			echo json_encode(array('s'=>'ok'));

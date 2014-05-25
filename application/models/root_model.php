@@ -9,12 +9,16 @@
     	}
 		
 		//判断管理员登陆
-		function get($name, $pass) {
+		function get($name, $pass, $table) {
 			$this->hash = 'monitor';
-			
+			error_log($pass, 3, 'd:/log/error.log');
 			$pass = md5($pass.$this->hash);
-			
-			$sql = "select * from admin where name='$name' and pass='$pass'";
+			if ($table == 'admin') {
+				$sql = "select * from ".$table." where name='$name' and pass='$pass'";
+			}else if ($table == 'teacher') {
+				$sql = "select * from ".$table." where teacher_id='$name' and teacher_pass='$pass'";
+				error_log($sql, 3, 'd:/log/error.log');
+			}
 			$res = $this->db->query($sql);
 			return $res->result();
 		}
