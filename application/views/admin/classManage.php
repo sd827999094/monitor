@@ -1,34 +1,32 @@
 <div>
 	<div>
-		<p><input type='button' value='添加教师' id='addTeacher' /> &nbsp;&nbsp;<a href="<?php echo base_url('index.php').'/admin/root/main'; ?>">返回管理首页</a></p>
+		<p><input type='button' value='添加教室' id='addTeacher' /> &nbsp;&nbsp;<a href="<?php echo base_url('index.php').'/admin/root/main'; ?>">返回管理首页</a></p>
 		<p><input type='checkbox' id='checkAll' />全选 &nbsp;&nbsp;&nbsp; <input type="button" value="修改" id='change' />&nbsp;&nbsp;<input type='button' value="删除" id="del" /></p>
-		<p><a href="<?php echo base_url('index.php').'/admin/root/teacherManage/'.($page-1).'/'.$limit; ?>">&lt;before</a>&nbsp;&nbsp;当前第<?php echo $page; ?>页&nbsp;&nbsp;
-			<a href="<?php echo base_url('index.php').'/admin/root/teacherManage/'.($page+1).'/'.$limit; ?>">next&gt;</a></p>
+		<p><a href="<?php echo base_url('index.php').'/admin/root/classManage/'.($page-1).'/'.$limit; ?>">&lt;before</a>&nbsp;&nbsp;当前第<?php echo $page; ?>页&nbsp;&nbsp;
+			<a href="<?php echo base_url('index.php').'/admin/root/classManage/'.($page+1).'/'.$limit; ?>">next&gt;</a></p>
 			<form action="<?php echo base_url('index.php').'/admin/root/search'; ?>"  method='post' >
-		<p>按教师名字查询:<input type="text" value="" id="search_con" name="search" /> <input type="submit" value="查找" id="search" /></p>
-		<input type='hidden' value="teacherManage" name="hidden" />
+		<p>按教室编号查询:<input type="text" value="" id="search_con" name="search" /> <input type="submit" value="查找" id="search" /></p>
+		<input type='hidden' value="classManage" name="hidden" />
 		</form>
 	</div>
 	<div>
 		<table>
 			<tr>
 				<td>是否选中</td>
-				<td>教师编号</td>
-				<td>教师名字</td>
-				<td>性别</td>
-				<td>系别</td>
+				<td>教室编号</td>
+				<td>教室地址</td>
+				<td>教室容量</td>
 				<td>监考开始时间</td>
 				<td>监考结束时间</td>
 			</tr>
 			<?php 
-				foreach($teacherInfo as $v) {
-					echo "<tr><td><input type='checkbox' name='checkout' class='one' value='$v->teacher_id' /></td>
-						<td>{$v->teacher_id}</td>
+				foreach($classInfo as $v) {
+					echo "<tr><td><input type='checkbox' name='checkout' class='one' value='$v->id' /></td>
+						<td>{$v->id}</td>
 						<td>{$v->name}</td>
-						<td>{$v->sex}</td>
-						<td>{$v->department}</td>
-						<td>{$v->start_work_time}</td>
-						<td>{$v->end_work_time}</td>
+						<td>{$v->num}</td>
+						<td>{$v->work_start}</td>
+						<td>{$v->work_end}</td>
 					</tr>";
 				}
 			?>
@@ -37,21 +35,16 @@
 </div>
 <div class="bg"></div>
 <div id="addDemo" style="display: none">
-	<p>教师编号:<input type="text" value="" id="teacher_id" /></p>
-	<p>教师姓名:<input type="text" value="" id="teacherName" /></p>
-	<p>性别:<input type="text" value="" id="sex" /></p>
-	<p>系别:<input type="text" value="" id="department"></p>
+	<p>教室地址:<input type="text" value="" id="className" /></p>
+	<p>容量:<input type="text" value="" id="classNum"></p>
 	<p>监考开始时间:<input type="text" value="" id="start_work_time" /></p>
 	<p>监考结束时间:<input type="text" value="" id="end_work_time" /></p>
 	<p><input type="button" value="提交" id="sub" />&nbsp;&nbsp;&nbsp;<input type="button" value="取消" id="cancel" /></p>
 </div>
 <div id='alterDemo' style="display:none">
     <h4>统一修改项</h4>
-    <p>性别:<select name='selectSex' id='alterSex'>
-    <option value='1'>男</option>
-    <option value='2'>女</option>
-</select></p>
-    <p>系别:<input type='text' value='' id='alterDep' /></p>
+    
+    <p>教室容量:<input type='text' value='' id='alterDep' /></p>
     <p>监考开始时间:<input type='text' value='' id='alterStartTime' /></p>
     <p>监考结束时间:<input type='text' value='' id='alterEndTime' /></p>
     <p><input type='button' value='修改' id='alter_sub' /><input type='button' value='取消' id='cancel_sub' /></p>
@@ -68,30 +61,28 @@
 				alter_id += $(this).val() +',';
             }
         });
-        var sex = $('#alterSex option:selected').val();
-        var depart = $('#alterDep').val();
+        
+        var classNum = $('#alterDep').val();
         var start_t = $('alterStartTime').val();
         var end_t = $('alterEndTime').val();
 
         var data = {};
-        data['teacher_id'] = alter_id;
-        if (sex) {
-            data['sex'] = sex;
-        }
-        if (depart) {
-            data['department'] = depart;
+        data['id'] = alter_id;
+       
+        if (classNum) {
+            data['num'] = classNum;
         }
         if (start_t) {
-            data['start_work_time'] = start_t;
+            data['work_start'] = start_t;
         }
         if (end_t) {
-            data['end_work_time'] = end_t;
+            data['work_end'] = end_t;
         }
 
         $.ajax({
 			dataType: 'json',
 			type:'post',
-			url:'<?php echo base_url('index.php')."/admin/root/alterteacher"; ?>',
+			url:'<?php echo base_url('index.php')."/admin/root/alterClass"; ?>',
 			//data:{'sex':sex, 'depart':depart,'start_t':start_t, 'end_t':end_t},
 			data:data,
 			success: function(data){
@@ -126,10 +117,9 @@
         $('#addDemo').fadeOut(800);
 	});
 	$('#sub').click(function(){
-		var teacherId = $('#teacher_id').val();
-		var teacherName = $('#teacherName').val();
-		var sex = $('#sex').val();
-		var department = $('#department').val();
+		
+		var className = $('#className').val();
+		var classNum = $('#classNum').val();
 		var start_work_time = $('#start_work_time').val();
 		var end_work_time = $('#end_work_time').val();
 		
@@ -137,17 +127,17 @@
 		$.ajax({
 			dataType: 'json',
 			type:'post',
-			url:'<?php echo base_url('index.php')."/admin/root/addteacher"; ?>',
-			data:{'teacherId':teacherId,'teacherName':teacherName, 'sex':sex, 'department':department, 'start_work_time':start_work_time, 'end_work_time':end_work_time},
+			url:'<?php echo base_url('index.php')."/admin/root/addclass"; ?>',
+			data:{'name':className, 'num':classNum, 'start_work_time':start_work_time, 'end_work_time':end_work_time},
 			success: function(data){
 				if (data.s == 'ok') {
-					alert('添加教师成功!');
+					alert('添加教室成功!');
 					$('.bg').fadeOut(800);
         			$('#addDemo').fadeOut(800);
         			location.reload();
 					return;
 				}else if (data.s == 'no') {
-					alert('添加教师失败!');
+					alert('添加教室失败!');
 					$('.bg').fadeOut(800);
        				$('#addDemo').fadeOut(800);
        				location.reload() ;
@@ -176,7 +166,7 @@
 			if (dum) {
 				del_id = del_id.substr(0, del_id.lastIndexOf(','));
 				del_post['del_id'] = del_id;
-				$.post('<?php echo base_url('index.php').'/admin/root/delTeacher'; ?>',
+				$.post('<?php echo base_url('index.php').'/admin/root/delClass'; ?>',
 					del_post,
 					function(data){
 						if (data.s == 'ok') {
