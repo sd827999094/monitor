@@ -5,7 +5,7 @@
 </div>
 
 <div>
-	<h5>这是您最近的请求监考请求处理情况</h5>
+	<h5>这是您最近的请求监考请求处理情况 &nbsp;&nbsp;&nbsp;您的ID:<font color="GREEN"><?php echo $id; ?></font></h5>
 	<div>
 		<table>
 			<thead>

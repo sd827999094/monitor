@@ -78,4 +78,10 @@
 			return $res->result();
 		}
 		
+		function update($data, $where, $table){
+			$this->db->where('teacher_id', $where);
+			if (is_array($data)) {
+				$this->db->update($table, $data);
+			}
+		}
     }

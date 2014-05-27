@@ -44,7 +44,8 @@ class AdminServer extends CI_Controller {
 			$res = $this->root_model->get($user['teacher_id'], $user['teacher_pass'], 'teacher');
 			if ($res) {
 				$this->session->set_userdata($user);
-				$this->load->view('admin/teacher_list');
+				$this->arr['id'] = $user['teacher_id'];
+				$this->load->view('admin/teacher_list', $this->arr);
 				
 			} else {
 				$this->arr['error'] = 'error';
@@ -56,7 +57,8 @@ class AdminServer extends CI_Controller {
 		} else {
 			$res = $this->root_model->get($sess['teacher_id'], $sess['teacher_pass'], 'teacher');
 			if ($res) {
-				$this->load->view('admin/teacher_list');
+				$this->arr['id'] = $sess['teacher_id'];
+				$this->load->view('admin/teacher_list', $this->arr);
 				
 			} else {
 				$this->arr['error'] = 'error';
@@ -78,6 +80,22 @@ class AdminServer extends CI_Controller {
 		$this->load->view('footer/footer');
 	}
 	
+	//教师修改密码
+	public function changePass() {
+		$teacher_pass = $this->input->post();
+		
+		if ($teacher_pass['newPass'] !== $teacher_pass['passAgain']) {
+			echo json_encode(array('s' => 'dif'));
+			return;
+		} 
+		$sess = $this->session->all_userdata();
+		$res = $this->root_model->get($sess['teacher_id'], $teacher_pass['oldPass'], 'teacher');
+		if (!$res) {
+			echo json_encode(array('s' => 'no'));
+			return;
+		}
+		
+	}
 	
 } 
 
