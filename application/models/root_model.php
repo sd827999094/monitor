@@ -16,7 +16,8 @@
 			if ($table == 'admin') {
 				$sql = "select * from ".$table." where name='$name' and pass='$pass'";
 			}else if ($table == 'teacher') {
-				$sql = "select * from ".$table." where teacher_id='$name' and teacher_pass='$pass'";
+				$name = (int)$name;
+				$sql = "select * from ".$table." where teacher_id=$name and teacher_pass='$pass'";
 				error_log($sql, 3, 'd:/log/error.log');
 			}
 			$res = $this->db->query($sql);
@@ -83,5 +84,12 @@
 			if (is_array($data)) {
 				$this->db->update($table, $data);
 			}
+		}
+		
+		function searchById($id, $table) {
+			$sql = "select * from $table where teacher_id=$id";
+			$res = $this->db->query($sql);
+			return $res->result();
+			
 		}
     }

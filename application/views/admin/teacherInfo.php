@@ -39,13 +39,14 @@
 		}
 		
 		$.ajax({
-			url:"<?php echo base_url('index.php')?>+'/admin/adminServer/changePass'",
-			datatype:'json',
+			url:"<?php echo base_url('index.php')?>/admin/adminServer/changePass",
+			dataType:'json',
 			type:'post',
 			data:{'oldPass':oldPass, 'newPass':newPass, 'passAgain':passAgain},
 			success:function(data){
 				if (data.s == 'ok') {
 					alert('修改成功!');
+					location.reload();
 					return;
 				}else if (data.s == 'dif') {
 					alert('新密码不一致');
@@ -53,6 +54,9 @@
 				} else if (data.s == 'no') {
 					alert('旧密码不正确!');
 					return;
+				} else {
+					alert(data.s);
+					alert('请联系管理员!');
 				}
 			},
 			

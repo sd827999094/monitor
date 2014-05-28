@@ -73,9 +73,12 @@ class AdminServer extends CI_Controller {
 	}
 	
 	//教师个人信息
-	public function teacherInfo() {
+	public function teacherInfo($id) {
 		$this->arr['title'] = '教师信息';
-		$this->load->view('header/header', $this->arr['title']);
+		$res = $this->root_model->searchById($id, 'teacher');
+		error_log(print_r($res, true),3,'d:/log/error.log');
+		$this->arr['status'] = ($res[0]->status=='0')?'空闲':'忙碌';
+		$this->load->view('header/header', $this->arr);
 		$this->load->view('admin/teacherInfo');
 		$this->load->view('footer/footer');
 	}
@@ -83,7 +86,7 @@ class AdminServer extends CI_Controller {
 	//教师修改密码
 	public function changePass() {
 		$teacher_pass = $this->input->post();
-		
+			
 		if ($teacher_pass['newPass'] !== $teacher_pass['passAgain']) {
 			echo json_encode(array('s' => 'dif'));
 			return;
@@ -92,11 +95,14 @@ class AdminServer extends CI_Controller {
 		$res = $this->root_model->get($sess['teacher_id'], $teacher_pass['oldPass'], 'teacher');
 		if (!$res) {
 			echo json_encode(array('s' => 'no'));
-			return;
+			
+		}else {
+			$newPass = md5($teacher_pass['newPass'].'monitor');
+			$up_data = array('teacher_pass'=>$newPass);
+			
+			$this->root_model->update($up_data, $sess['teacher_id'], 'teacher');
+			echo json_encode(array('s'=>'ok'));
 		}
-		
-		
-		
 	}
 	
 } 

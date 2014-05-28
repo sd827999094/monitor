@@ -108,6 +108,7 @@ class Root extends CI_Controller {
 				'start_work_time' => $teacherInfo['start_work_time'],
 				'end_work_time' => $teacherInfo['end_work_time'],
 				'teacher_pass' => $pass,
+				'status' => '0',
 			);
 		$res = $this->root_model->insertInfo($data, 'teacher');
 		if($res) {
