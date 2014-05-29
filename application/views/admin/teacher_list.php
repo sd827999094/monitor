@@ -1,7 +1,7 @@
 <div>
 	<h2>这是您的后台管理页面</h2>
 	<p><a href="<?php echo base_url('index.php').'/admin/adminServer/teacherInfo/'.$id; ?>">个人信息</a></p>
-	<p><a href="">提交监考请求</a></p>
+	<p><a href="<?php echo base_url('index.php').'admin/adminServer/' ?>">提交监考请求</a></p>
 </div>
 
 <div>

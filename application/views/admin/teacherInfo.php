@@ -1,4 +1,5 @@
 <div>
+	<p><a href="<?php echo base_url('index.php') ?>/admin/adminServer/main">返回您的管理界面</a></p>
 	<p><input type="button" value="修改密码" id="changePass" /></p>
 	<div style="display:none" id="passDiv">
 		<form action="<?php echo base_url('index.php').'/admin/adminServer/changePass'; ?>" method='post'>
@@ -23,6 +24,22 @@
 	});
 	$('#cancel').click(function(){
 		$('#passDiv').toggle('slow');
+	});
+	$('#changeStatus').click(function(){
+		var status = $('#status option:selected').val();
+		$.ajax({
+			url:'<?php echo base_url('index.php'); ?>/admin/adminServer/changeStatus',
+			dataType:'json',
+			type:'post',
+			data:{'status':status},
+			success:function(data){
+				if (data.s == 'ok') {
+					alert('修改成功!');
+					location.reload();
+					return;
+				}
+			}
+		});
 	});
 	$('#confirm').click(function(){
 		

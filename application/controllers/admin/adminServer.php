@@ -105,6 +105,17 @@ class AdminServer extends CI_Controller {
 		}
 	}
 	
+	//更新教师状态
+	public function changeStatus(){
+		$status = $this->input->post();
+		$sess = $this->session->all_userdata();
+		
+		$up_data = array(
+			'status' => $status['status']
+		);
+		$res = $this->root_model->update($up_data, $sess['teacher_id'], 'teacher');
+		echo json_encode(array('s'=>'ok'));
+	}
 } 
 
 /* End of file welcome.php */
