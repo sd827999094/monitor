@@ -45,6 +45,16 @@
 			return $res;
 		}
 		
+		//通用查询
+		function query_info($sql) {
+			$res = $this->db->query($sql);
+			if ($res->num_rows() > 0) {
+				return $res->result();
+			}else {
+				return null;
+			}
+		}
+		
 		//删除教师数据
 		function del($table, $where, $del) {
 			
