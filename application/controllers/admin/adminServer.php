@@ -84,8 +84,12 @@ class AdminServer extends CI_Controller {
 						
 						$sql_teacher = 'select monitor_id from res where request_id='.$v->id;
 						$data_teacher = $this->root_model->query_info($sql_teacher);
+						if($data_teacher) {
 						foreach($data_teacher as $val_teacher) {
 							$data_list['class_teacher_id'] = $val_teacher->monitor_id;
+						}
+						}else {
+							$data_list['class_teacher_id'] = "";
 						}
 						$data_list_str[] = $data_list;
 					}

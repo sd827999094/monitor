@@ -4,5 +4,5 @@
 	<div>
 		<p><a href="<?php echo base_url('index.php').'/admin/root/teacherManage'; ?>">教师管理</a></p>
 		<p><a href="<?php echo base_url('index.php').'/admin/root/classManage'; ?>">教室管理</a></p>
-		<p><a href="">监考需求审核</a></p>
+		<p><a href="<?php echo base_url('index.php').'/admin/root/requestManage';?>">监考需求审核</a></p>
 		</div>

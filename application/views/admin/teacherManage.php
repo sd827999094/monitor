@@ -10,15 +10,15 @@
 		</form>
 	</div>
 	<div>
-		<table>
+		<table class="gridtable">
 			<tr>
-				<td>是否选中</td>
-				<td>教师编号</td>
-				<td>教师名字</td>
-				<td>性别</td>
-				<td>系别</td>
-				<td>监考开始时间</td>
-				<td>监考结束时间</td>
+				<th>是否选中</th>
+				<th>教师编号</th>
+				<th>教师名字</th>
+				<th>性别</th>
+				<th>系别</th>
+				<th>监考开始时间</th>
+				<th>监考结束时间</th>
 			</tr>
 			<?php 
 				foreach($teacherInfo as $v) {
@@ -239,6 +239,27 @@
     left:0;
     opacity:0.7;
 }
-
+table.gridtable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+	border-width: 1px;
+	border-color: #666666;
+	border-collapse: collapse;
+}
+table.gridtable th {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #dedede;
+}
+table.gridtable td {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #ffffff;
+}
 
 </style>

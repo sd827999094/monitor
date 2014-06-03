@@ -223,6 +223,67 @@ class Root extends CI_Controller {
 		$this->load->view('footer/footer');
 	
 	}
+	//教师提交信息管理页面
+	public function requestManage() {
+		$sql = 'select * from request';
+		$res_list = $this->root_model->query_info($sql);
+		$this->arr['title'] = '教师请求管理';
+		$this->load->view('header/header',$this->arr);
+		$data_list_str = array();
+		if ($res_list) {
+			
+			foreach($res_list as $v) {
+				$data_list = array();
+				
+				$sql_name = 'select name from teacher where teacher_id='.$v->teacher_id;
+				$name = $this->root_model->query_info($sql_name);
+				if ($name) {
+					foreach($name as $val_n) {
+						$name_str = $val_n->name;
+					}
+				}else {
+					$name_str = '';
+				}
+				
+				$data_list['id'] = $v->id;
+				$data_list['teacher_id'] = $v->teacher_id;
+				
+				$data_list['name'] = $name_str;
+				$data_list['className'] = $v->class_name;
+				$data_list['req_t'] = date('Y-m-d H:i:s',$v->req_t);
+				$data_list['num'] = $v->num;
+				$data_list['status'] = $v->status;
+				
+				$sql = "select room.name from res, room where res.request_id=".$v->id ." and res.room_id = room.id";
+				$data_join = $this->root_model->query_info($sql);
+				if ($data_join) {
+					 foreach($data_join as $val){
+						$data_list['class_address'] = $val->name;
+					 }
+				 }else {
+				 	$data_list['class_address'] = '';
+				 }
+				$data_list['test_t'] = date('Y-m-d H:i:s',$v->exam_start_time).'----'.date('Y-m-d H:i:s',$v->exam_end_time);
+				
+				$sql_teacher = 'select monitor_id from res where request_id='.$v->id;
+				$data_teacher = $this->root_model->query_info($sql_teacher);
+				if($data_teacher) {
+					foreach($data_teacher as $val_teacher) {
+						$data_list['class_teacher_id'] = $val_teacher->monitor_id;
+					}
+				}else {
+					$data_list['class_teacher_id'] = "";
+				}
+				$data_list_str[] = $data_list;
+			}
+			
+		}
+		$this->arr['res'] = $data_list_str;
+		
+		$this->load->view('admin/requestManage', $this->arr);
+		$this->load->view('footer/footer');
+	}
+	
 	
 	//查找
 	public function search() {
@@ -249,6 +310,29 @@ class Root extends CI_Controller {
 			$this->load->view('admin/'.$type.'.php', $this->arr);
 		}
 		$this->load->view('footer/footer');
+	}
+
+
+	//删除
+	public function delReq() {
+		$req_id = $this->input->post('id');
+		//先判断系统有没有处理，如果处理过了，驳回操作
+		
+		$arr = array($req_id);
+		
+		$res = $this->root_model->del('request','id', $arr);
+		if ($res) {
+			echo json_encode(array('s' => 'ok'));
+		} else {
+			echo json_encode(array('s' => 'error'));
+		}
+	
+	}
+	
+	
+	//定时任务，每天13:00和24:00进行更新，处理监考需求
+	public function dealRequestByRoot() {
+		$sql = 'select * from request';
 	}
 } 
 
