@@ -333,6 +333,15 @@ class Root extends CI_Controller {
 	//定时任务，每天13:00和24:00进行更新，处理监考需求
 	public function dealRequestByRoot() {
 		$sql = 'select * from request';
+		$res_req = $this->root_model->query_info($sql);
+		if ($res_req) {
+			foreach($res_req as $v) {
+				$sql_v = 'select * from request where class_name='.$v->class_name;
+				$result = $this->root_model->query_info($sql_v);
+			}
+		}else {
+			return null;
+		}
 	}
 } 
 
