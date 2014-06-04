@@ -332,12 +332,44 @@ class Root extends CI_Controller {
 	
 	//定时任务，每天13:00和24:00进行更新，处理监考需求
 	public function dealRequestByRoot() {
+		
 		$sql = 'select * from request';
 		$res_req = $this->root_model->query_info($sql);
+		
 		if ($res_req) {
-			foreach($res_req as $v) {
-				$sql_v = 'select * from request where class_name='.$v->class_name;
-				$result = $this->root_model->query_info($sql_v);
+			foreach($res_req as $k => $v) {
+				//遍历教室容量,取教室最小的
+				$sql_room = 'select * from room where num >='.$v->num;
+				$res_room = $this->root_model->query_info($sql_room);
+				$room_arr = array();
+				$mini = 0;
+				//如果一个教室可以承载
+				if ($res_room) {
+					foreach($res_room as $v_room) {
+						$room_arr[$mini] = $v_room;
+						$mini ++;
+					}
+					
+					//冒泡排序选出容量最小的教室
+					for($i=1;$i<$mini;$i++) {
+						for($j=0;$j<$mini-$i;$j++) {
+							if($res_room[$j]->num > $res_room[$j+1]->num) {
+								$temp = $res_room[$j];
+								$res_room[$j] = $res_room[$j+1];
+								$res_room[$j+1] = $temp;
+							}
+						}
+					}
+					//查看最小教室是否被占用，如果没有，则选择之，否则向后顺延
+					for($m=0;$m<$mini;$m++) {
+						if (!$res_room[$m]->status) {
+							//选中该教室
+							
+						}
+					}
+				}else {
+					
+				}
 			}
 		}else {
 			return null;
