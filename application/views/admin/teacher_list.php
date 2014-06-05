@@ -16,6 +16,7 @@
 					<th>教师请求科目</th>
 					<th>请求时间</th>
 					<th>请求人数</th>
+					<th>考试时长</th>
 					<th>请求状态</th>	
 					<th>考试地点</th>
 					<th>考试时间</th>
@@ -32,6 +33,7 @@
 						<td>{$value['className']}</td>
 						<td>{$value['req_t']}</td>
 						<td>{$value['num']}</td>
+						<td>{$value['hour_length']}</td>
 						<td>{$value['status']}</td>
 						<td>{$value['class_address']}</td>
 						<td>{$value['test_t']}</td>

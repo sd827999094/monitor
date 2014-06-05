@@ -253,6 +253,7 @@ class Root extends CI_Controller {
 				$data_list['req_t'] = date('Y-m-d H:i:s',$v->req_t);
 				$data_list['num'] = $v->num;
 				$data_list['status'] = $v->status;
+				$data_list['hour_length'] = $v->hour_length;
 				
 				$sql = "select room.name from res, room where res.request_id=".$v->id ." and res.room_id = room.id";
 				$data_join = $this->root_model->query_info($sql);
@@ -364,6 +365,12 @@ class Root extends CI_Controller {
 					for($m=0;$m<$mini;$m++) {
 						if (!$res_room[$m]->status) {
 							//选中该教室
+							//$sql_rup = 'update room set time = '.$v->exam_start_time.'-'.$v->exam_end_time.',';
+							$up_dt = array(
+								'time' => $v->exam_start_time.'-'.$v->exam_end_time,
+							);
+							$where = array($res_room[$m]->id);
+							$this->root_model->alterData($sql_rup, $where, 'room');
 							
 						}
 					}

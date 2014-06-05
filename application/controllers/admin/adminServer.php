@@ -70,6 +70,7 @@ class AdminServer extends CI_Controller {
 						$data_list['req_t'] = date('Y-m-d H:i:s',$v->req_t);
 						$data_list['num'] = $v->num;
 						$data_list['status'] = $v->status;
+						$data_list['hour_length'] = $v->hour_length;
 						
 						$sql = "select room.name from res, room where res.request_id=".$v->id ." and res.room_id = room.id";
 						$data_join = $this->root_model->query_info($sql);
@@ -132,6 +133,7 @@ class AdminServer extends CI_Controller {
 						$data_list['req_t'] = date('Y-m-d H:i:s',$v->req_t);
 						$data_list['num'] = $v->num;
 						$data_list['status'] = $v->status;
+						$data_list['hour_length'] = $v->hour_length;
 						
 						$sql = "select room.name from res, room where res.request_id=".$v->id ." and res.room_id = room.id";
 						$data_join = $this->root_model->query_info($sql);
@@ -234,6 +236,7 @@ class AdminServer extends CI_Controller {
 		$start_t = strtotime($req['start_t']);
 		$end_t = strtotime($req['end_t']);
 		$className = $req['className'];
+		$hour_length = $req['hour_length'];
 		
 		$now = time();
 		if ($start_t <= $now || $end_t <= $start_t) {
@@ -250,6 +253,7 @@ class AdminServer extends CI_Controller {
 			'exam_end_time' => $end_t,
 			'req_t' => time(),
 			'teacher_id' => $id,
+			'hour_length' => $hour_length,
 		);
 		$insert_res = $this->root_model->insertInfo($insert_data, 'request');
 		if($insert_res) {
