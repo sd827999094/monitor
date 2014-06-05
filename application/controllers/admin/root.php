@@ -372,6 +372,8 @@ class Root extends CI_Controller {
 							$where = array($res_room[$m]->id);
 							$this->root_model->alterData($sql_rup, $where, 'room');
 							
+							
+							
 						}
 					}
 				}else {
