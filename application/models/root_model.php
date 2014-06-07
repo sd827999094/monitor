@@ -11,14 +11,12 @@
 		//判断管理员登陆
 		function get($name, $pass, $table) {
 			$this->hash = 'monitor';
-			error_log($pass, 3, 'd:/log/error.log');
 			$pass = md5($pass.$this->hash);
 			if ($table == 'admin') {
 				$sql = "select * from ".$table." where name='$name' and pass='$pass'";
 			}else if ($table == 'teacher') {
 				$name = (int)$name;
 				$sql = "select * from ".$table." where teacher_id=$name and teacher_pass='$pass'";
-				error_log($sql, 3, 'd:/log/error.log');
 			}
 			$res = $this->db->query($sql);
 			return $res->result();
@@ -69,11 +67,11 @@
 					$this->db->where_in('teacher_id', $where);
 				}
 				$res = $this->db->update('teacher', $data);
-			}else if($table == 'room') {
+			}else  {
 				if ($where) {
 					$this->db->where_in('id', $where);
 				}
-				$res = $this->db->update('room', $data);
+				$res = $this->db->update($table, $data);
 			}
 			return $res;
 		}

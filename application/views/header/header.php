@@ -13,6 +13,9 @@
 		<script type="text/javascript" src="<?php echo base_url(); ?>My97DatePicker/WdatePicker.js"></script>
 		<script src="<?php echo base_url(); ?>js/login.js"></script>
 		
+<?php
+    ini_set('date.timezone','Asia/Shanghai');
+?>
 		
 	</head>
 	<body>

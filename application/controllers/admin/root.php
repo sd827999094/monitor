@@ -339,51 +339,132 @@ class Root extends CI_Controller {
 		
 		if ($res_req) {
 			foreach($res_req as $k => $v) {
-				//遍历教室容量,取教室最小的
-				$sql_room = 'select * from room where num >='.$v->num;
-				$res_room = $this->root_model->query_info($sql_room);
-				$room_arr = array();
-				$mini = 0;
-				//如果一个教室可以承载
-				if ($res_room) {
-					foreach($res_room as $v_room) {
-						$room_arr[$mini] = $v_room;
-						$mini ++;
-					}
-					
-					//冒泡排序选出容量最小的教室
-					for($i=1;$i<$mini;$i++) {
-						for($j=0;$j<$mini-$i;$j++) {
-							if($res_room[$j]->num > $res_room[$j+1]->num) {
-								$temp = $res_room[$j];
-								$res_room[$j] = $res_room[$j+1];
-								$res_room[$j+1] = $temp;
-							}
-						}
-					}
-					//查看最小教室是否被占用，如果没有，则选择之，否则向后顺延
-					for($m=0;$m<$mini;$m++) {
-						if (!$res_room[$m]->status) {
-							//选中该教室
-							//$sql_rup = 'update room set time = '.$v->exam_start_time.'-'.$v->exam_end_time.',';
-							$up_dt = array(
-								'time' => $v->exam_start_time.'-'.$v->exam_end_time,
-							);
-							$where = array($res_room[$m]->id);
-							$this->root_model->alterData($sql_rup, $where, 'room');
-							
-							
-							
-						}
-					}
-				}else {
-					
-				}
+
+
 			}
 		}else {
 			return null;
 		}
 	}
+    //选教室
+    public function chooseRoom ($v) {
+
+        //如果一间教室可以完成
+        $room_arr = array();
+        $count = 1;
+        //10倍分率,已足够
+        foreach($i=1;$i<10;$i++) {
+            $res = $this->chooseOneRoom($v, $i);
+            //如果分到了教室，则找到了分教室的标准
+            if ($res) {
+                $room_arr[0] = $res;
+                for($j=1;$j<$count;$j++) {
+                    $res = $this->chooseOneRoom($v, $i);
+                    $room_arr[$j] = $res;
+                }
+                break;
+            }else {
+                //否则记录还需分几次
+                $count ++;
+            }
+        }
+        return $room_arr;
+    }
+
+    //选择一间教室
+    public function chooseOneRoom($v, $lv) {
+        $sql_room = 'select * from room where num >='.$v->num/$lv;
+        $res_room = $this->root_model->query_info($sql_room);
+        $room_arr = array();
+        $mini = 0;
+
+        if ($res_room) {
+            foreach($res_room as $v_room) {
+                $room_arr[$mini] = $v_room;
+                $mini ++;
+            }
+
+            //冒泡排序选出容量最小的教室
+            for($i=1;$i<$mini;$i++) {
+                for($j=0;$j<$mini-$i;$j++) {
+                    if($room_arr[$j]->num > $room_arr[$j+1]->num) {
+                        $temp = $room_arr[$j];
+                        $room_arr[$j] = $room_arr[$j+1];
+                        $room_arr[$j+1] = $temp;
+                    }
+                }
+            }
+            //查看最小教室是否被占用，如果没有，则选择之，否则向后顺延
+            $date_array = '';
+            for($m=0;$m<$mini;$m++) {
+                if (!$room_arr[$m]->time) {
+                    //选中该教室
+                    //$sql_rup = 'update room set time = '.$v->exam_start_time.'-'.$v->exam_end_time.',';
+                    $up_dt = array(
+                        'time' => $v->exam_start_time.'-'.$v->exam_end_time,
+                    );
+                    $where = array($room_arr[$m]->id);
+                    $this->root_model->alterData($up_dt, $where, 'room');
+                    return $room_arr[$m]->id;
+                }else {
+                    //如果已经有占领，则判断其时间与请求时间是否冲突
+                    $time = $room_arr[$m]->time
+                        $time_arr = explode(',',$time);
+                    if ($m == 0) {
+                        $date_array = $time;
+                    }
+                    $bool = true;
+                    //如果时间不冲突，表明这间教室可以使用，标记使用
+                    foreach($time_arr as $time_v) {
+                        $arr_v = explode('-', $time_v);
+                        if (($arr_v[0]>= $v->exam_start_time && $arr_v[0]>=$v->exam_end_time)||($arr_v[1]<=$v->exam_start_time && $arr_v[1]<=$v->exam_end_time)) {
+                            continue;
+                        }
+                        $bool = false;
+
+                    }
+                    if ($bool) {
+                        $time = $time.','.$v->exam_start_time.'-'.$v->exam_end_time;
+                        $up_dt = array(
+                            'time' => $time,
+                        );
+                        $where = array($room_arr[$m]->id);
+                        $this->root_model->alterData($up_dt, $where, 'room');
+                        return $room_arr[$m]->id;
+                    }
+                }
+            }
+            //如果所有教室都不满足期望时间,则系统自动设定
+            $long = $v->hour_length;
+            for($i=1;$i<=20;$i++) {
+                $bool = true;
+                //自动设置为请求时间的延后的相同时间
+                $start_t = $v->exam_start_time + 86400*$i;
+                $end_t = $v->exam_end_time + 86400*$i;
+                $date_l = explode(',', $date_array);
+                foreach($date_l as $time_v) {
+                    $arr_l = explode('-', $time_v);
+                    if (($arr_l[0]>= $v->exam_start_time && $arr_l[0]>=$v->exam_end_time)||($arr_l[1]<=$v->exam_start_time && $arr_l[1]<=$v->exam_end_time)) {
+                        continue;
+                    }
+                    $bool = false;
+                    break;   
+                }
+                if ($bool) {
+                    $time = $date_array.','.$start_t.'-'.$end_t;
+                    $up_dt = array(
+                        'time' => $time,
+                    );
+                    $where = array($room_arr[0]->id);
+                    $this->root_model->alterData($up_dt, $where, 'room');
+                    return $room_arr[0]->id;
+                }
+            }
+        } else {
+            //一间教室分不开
+            return null;
+        }
+    }
 } 
 
 /* End of file welcome.php */
