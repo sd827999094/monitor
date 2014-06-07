@@ -339,14 +339,132 @@ class Root extends CI_Controller {
 		
 		if ($res_req) {
 			foreach($res_req as $k => $v) {
+                //先分配教室
+                $arr_class = $this->chooseRoom($v);
+                //教室分配成功
+                if ($arr_class) {
+                    $monitor_id = $this->chooseTeacher($v);
+                    //教师分配成功
+                    if($monitor_id) {
+                        //分配全部成功，更改申请状态
+                        $up_status = array(
+                            'status' => '通过',
+                        );
+                        $where = array($v->id);
+                        $this->root_model->alterData($up_status, $where, 'request');
 
+                        //写入最后结果表
+                        
+                    }
+                }
 
 			}
 		}else {
 			return null;
 		}
 	}
+    //选教师
+    public function chooseTeacher($v) {
+        //提出申请的老师必定监考
+        $res_t = $v->teacher_id;
+        $sql_t = 'select * from teacher where teacher_id='.$res_t;
+        $res_one = $this->root_model->query_info($sql_t);
+        if ($res_one) {
+            $arr_one = array();
+            foreach($res_one as $value) {
+                $arr_one[] = $value;
+            }
+            $up_t = array(
+                'busyDate' => $arr_one[0]->busyDate.','.$v->exam_start_time,
+            );
+            $where = array($res_t);
+            $this->root_model->alterData($up_t, $where, 'teacher');
+        }else {
+            return null;
+        }
+
+        //判断需要的监考老师人数
+        $num = ceil($v->num/30);
+        $count = $num -1;
+        for($i=0;$i<$count;$i++) {
+            $res = $this->chooseOneTeacher($v);
+            //如果老师不够，直接返回null并退出
+            if (!$res) {
+                reutrn null;
+                break;
+            }
+            $res_t .= ','.$res;
+        }
+        //返回监考列表，需要加入最终结果表
+        return $res_t;
+    }
+
+    //选择一个教师
+    public function chooseOneTeacher($v) {
+       $sql = 'select * from teacher'; 
+       $res_t = $this->root_model->query_info($sql);
+       if ($res_t) {
+            $t_arr = array();
+            foreach($res_t as $teacher_v)  {
+                $busyDate = $teacher_v->busyDate;
+                //如果该老师不忙碌，挑选出来
+                if (!$busyDate) {
+                    $t_arr = $teacher_v;
+                    continue;
+                }else {
+                    //如果该老师忙碌，但并不在这一天，加入
+                    $busy_arr = explode(',', $busyDate);
+                    $bool_t = true;
+                    foreach($busy_arr as $t) {
+                        $t = $t- $t%86400;
+                        $v_t = $v->exam_start_time-$v->exam_start_time%86400;
+                        if ($t == $v_t) {
+                            $bool_t = false;
+                            break;
+                        }
+                    }
+                    if ($bool_t) {
+                        $t_arr = $teacher_v;
+                    }
+                }
+            }
+            //对符合该条请求的所有老师按照监考次数排序
+            $t_count = count($t_arr);
+            if ($t_count) {
+                for($i=1;$i<$t_count;$i++) {
+                    for($j=0;$j<$t_count-$i;$j++) {
+                        if ($t_arr[$j]->monitor_times > $t_arr[$j+1]->monitor_times) {
+                            $temp = $t_arr[$j];
+                            $t_arr[$j] = $t_arr[$j+1];
+                            $t_arr[$j+1] = $temp
+                        }
+                    }
+                }
+                //选出监考次数最少的老师
+                $up_t = array(
+                    'busyDate' => $t_arr[0]->busyDate.','.$v->exam_start_time,
+                    'monitor_times' => ($t_arr[0]->monitor_times+1),
+                );
+                $where = array($t_arr[0]->teacher_id);
+                $this->root_model->alterData($up_t, $where, 'teacher');
+                return $t_arr[0]->teacher_id;
+            }else {
+                return null;
+            }
+
+
+       }else {
+            return null;
+       }
+    }
     //选教室
+    /*
+     *
+     *
+     *@return 
+     *      返回选中教室id数组
+     *
+     **/
     public function chooseRoom ($v) {
 
         //如果一间教室可以完成

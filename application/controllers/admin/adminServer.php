@@ -178,7 +178,6 @@ class AdminServer extends CI_Controller {
 	public function teacherInfo($id) {
 		$this->arr['title'] = '教师信息';
 		$res = $this->root_model->searchById($id, 'teacher');
-		error_log(print_r($res, true),3,'d:/log/error.log');
 		$this->arr['status'] = ($res[0]->status=='1')?'空闲':'忙碌';
 		$this->load->view('header/header', $this->arr);
 		$this->load->view('admin/teacherInfo');
@@ -270,7 +269,6 @@ class AdminServer extends CI_Controller {
 		//先判断系统有没有处理，如果处理过了，驳回操作
 		
 		$sql = 'select status from request where id='.$req_id;
-		error_log($sql, 3, 'd:/log/error.log');
 		$res = $this->root_model->query_info($sql);
 		$bool = true;
 		if ($res) {
