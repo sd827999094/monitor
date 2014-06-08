@@ -9,12 +9,9 @@
 		<p><input type="button" value="确认修改" id="confirm" />&nbsp;&nbsp;<input type="button" value="取消" id="cancel" /></p>
 		</form>
 	</div>
-	<p>
-		<select id="status">
-			<option value="1">空闲</option>
-			<option value="2">忙碌</option>
-		</select>
-		<input type='button' value="修改当前状态" id="changeStatus" /></p>
+	<p>如果您哪天有事不在空闲状态，请写入忙碌日期:
+<input type='text' value='' id='busyDate' onclick="WdatePicker()" onfocus="WdatePicker({dateFmt:'yyyy-M-d H:mm:ss',minDate:'{%y-1}-%M-%d 0:00:00',maxDate:'{%y+1}-%M-%d 23:59:59'})"  />
+		<input type='button' value="加入忙碌状态" id="changeStatus" /></p>
 	
 	<p><label>当前状态:<font color="green"><?php echo $status; ?></font></label></p>
 </div>
@@ -26,12 +23,12 @@
 		$('#passDiv').toggle('slow');
 	});
 	$('#changeStatus').click(function(){
-		var status = $('#status option:selected').val();
+		var busyDate = $('#busyDate').val();
 		$.ajax({
 			url:'<?php echo base_url('index.php'); ?>/admin/adminServer/changeStatus',
 			dataType:'json',
 			type:'post',
-			data:{'status':status},
+			data:{'busyDate':busyDate},
 			success:function(data){
 				if (data.s == 'ok') {
 					alert('修改成功!');

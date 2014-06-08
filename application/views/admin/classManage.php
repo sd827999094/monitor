@@ -10,14 +10,13 @@
 		</form>
 	</div>
 	<div>
-		<table>
+		<table class='gridtable'>
 			<tr>
-				<td>是否选中</td>
-				<td>教室编号</td>
-				<td>教室地址</td>
-				<td>教室容量</td>
-				<td>监考开始时间</td>
-				<td>监考结束时间</td>
+				<th>是否选中</th>
+				<th>教室编号</th>
+				<th>教室地址</th>
+				<th>教室容量</th>
+                <th>教室使用情况</th>
 			</tr>
 			<?php 
 				foreach($classInfo as $v) {
@@ -25,8 +24,7 @@
 						<td>{$v->id}</td>
 						<td>{$v->name}</td>
 						<td>{$v->num}</td>
-						<td>{$v->work_start}</td>
-						<td>{$v->work_end}</td>
+						<td>{$v->time}</td>
 					</tr>";
 				}
 			?>
@@ -37,16 +35,13 @@
 <div id="addDemo" style="display: none">
 	<p>教室地址:<input type="text" value="" id="className" /></p>
 	<p>容量:<input type="text" value="" id="classNum"></p>
-	<p>监考开始时间:<input type="text" value="" id="start_work_time" /></p>
-	<p>监考结束时间:<input type="text" value="" id="end_work_time" /></p>
 	<p><input type="button" value="提交" id="sub" />&nbsp;&nbsp;&nbsp;<input type="button" value="取消" id="cancel" /></p>
 </div>
 <div id='alterDemo' style="display:none">
     <h4>统一修改项</h4>
     
     <p>教室容量:<input type='text' value='' id='alterDep' /></p>
-    <p>监考开始时间:<input type='text' value='' id='alterStartTime' /></p>
-    <p>监考结束时间:<input type='text' value='' id='alterEndTime' /></p>
+    <p>教室地址名称:<input type='text' value='' id='alterName' /></p>
     <p><input type='button' value='修改' id='alter_sub' /><input type='button' value='取消' id='cancel_sub' /></p>
 </div>
 <script type="text/javascript">
@@ -63,8 +58,7 @@
         });
         
         var classNum = $('#alterDep').val();
-        var start_t = $('alterStartTime').val();
-        var end_t = $('alterEndTime').val();
+        var className = $('#alterName').val();
 
         var data = {};
         data['id'] = alter_id;
@@ -72,11 +66,8 @@
         if (classNum) {
             data['num'] = classNum;
         }
-        if (start_t) {
-            data['work_start'] = start_t;
-        }
-        if (end_t) {
-            data['work_end'] = end_t;
+        if (className){
+            data['name'] = className;
         }
 
         $.ajax({
@@ -120,15 +111,13 @@
 		
 		var className = $('#className').val();
 		var classNum = $('#classNum').val();
-		var start_work_time = $('#start_work_time').val();
-		var end_work_time = $('#end_work_time').val();
 		
 		
 		$.ajax({
 			dataType: 'json',
 			type:'post',
 			url:'<?php echo base_url('index.php')."/admin/root/addclass"; ?>',
-			data:{'name':className, 'num':classNum, 'start_work_time':start_work_time, 'end_work_time':end_work_time},
+			data:{'name':className, 'num':classNum},
 			success: function(data){
 				if (data.s == 'ok') {
 					alert('添加教室成功!');
@@ -228,5 +217,27 @@
     opacity:0.7;
 }
 
+table.gridtable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+	border-width: 1px;
+	border-color: #666666;
+	border-collapse: collapse;
+}
+table.gridtable th {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #dedede;
+}
+table.gridtable td {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #ffffff;
+}
 
 </style>

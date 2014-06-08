@@ -94,10 +94,6 @@ class Root extends CI_Controller {
 	
 	public function addteacher() {
 		$teacherInfo = $this->input->post();
-		$teacherInfo['start_work_time'] = $teacherInfo['start_work_time'] ? $teacherInfo['start_work_time'] : 0;
-		$teacherInfo['end_work_time'] = $teacherInfo['end_work_time'] ? $teacherInfo['end_work_time'] : 0;
-		$teacherInfo['start_work_time'] = strtotime($teacherInfo['start_work_time']);
-		$teacherInfo['end_work_time'] = strtotime($teacherInfo['end_work_time']);
 		$hash = 'monitor';
 		$pass = md5('123456'.$hash);
 		$data = array(
@@ -105,10 +101,10 @@ class Root extends CI_Controller {
 				'name' => $teacherInfo['teacherName'],
 				'sex' => $teacherInfo['sex'],
 				'department' => $teacherInfo['department'],
-				'start_work_time' => $teacherInfo['start_work_time'],
-				'end_work_time' => $teacherInfo['end_work_time'],
 				'teacher_pass' => $pass,
 				'status' => '0',
+                'busyDate' => '',
+                'monitor_times' => 0,
 			);
 		$res = $this->root_model->insertInfo($data, 'teacher');
 		if($res) {
@@ -121,15 +117,11 @@ class Root extends CI_Controller {
 	public function addclass() {
 		
 		$classInfo = $this->input->post();
-		$classInfo['start_work_time'] = $classInfo['start_work_time'] ? $classInfo['start_work_time'] : 0;
-		$classInfo['end_work_time'] = $classInfo['end_work_time'] ? $classInfo['end_work_time'] : 0;
-		$classInfo['start_work_time'] = strtotime($classInfo['start_work_time']);
 		
 		$data = array(
 			'name' => $classInfo['name'],
 			'num' => $classInfo['num'],
-			'work_start' => $classInfo['start_work_time'],
-			'work_end' => $classInfo['end_work_time'],
+            'time' => '',
 		);
 		$res = $this->root_model->insertInfo($data, 'room');
 		if ($res) {
@@ -329,12 +321,18 @@ class Root extends CI_Controller {
 		}
 	
 	}
-	
+    
 	
 	//定时任务，每天13:00和24:00进行更新，处理监考需求
+    //手动处理也放到这里处理
 	public function dealRequestByRoot() {
 		
-		$sql = 'select * from request';
+        $id = $this->input->post();
+        if ($id) {
+            $sql = 'select * from request where id='.$id['id'];
+        }else {
+		    $sql = 'select * from request';
+        }
 		$res_req = $this->root_model->query_info($sql);
 		
 		if ($res_req) {
@@ -343,6 +341,7 @@ class Root extends CI_Controller {
                 $arr_class = $this->chooseRoom($v);
                 //教室分配成功
                 if ($arr_class) {
+                    $class_str = implode(',', $arr_class);
                     $monitor_id = $this->chooseTeacher($v);
                     //教师分配成功
                     if($monitor_id) {
@@ -354,12 +353,48 @@ class Root extends CI_Controller {
                         $this->root_model->alterData($up_status, $where, 'request');
 
                         //写入最后结果表
-                        
+                        $insert = array(
+                            'request_id' => $v->id,
+                            'room_id' =>$class_str,
+                            'monitor_id' => $monitor_id, 
+                        );
+                        $this->root_model->insertInfo($insert, 'res');
+                        if ($id) {
+                            echo json_encode(array('s'=>'ok'));
+                        }
+                    }else {
+                        error_log('分配教师失败!',3, '/Users/yuyang/PHP/jkao/monitor/log/error.log');
+                        //消除分配教室信息
+                        foreach($arr_class as $v_class) {
+                            $del_sql = 'select * from room where id='.$v_class;
+                            $del_res = $this->root_model->query_info($del_sql);
+                            if ($del_res) {
+                                foreach($del_res as $del_v) {
+                                    $time_del = $del_v->time;
+                                    $time_del = substr($time_del, 0, strrpos($time_del, ','));
+                                    $up_arr = array(
+                                        'time' => $time_del,
+                                    );
+                                    $where = array($v_class);
+                                    $this->root_model->alterData($up_arr, $where, 'room');
+                                }
+                            }
+                        }
+                        if ($id) {
+                            echo json_encode(array('s'=>'noteacher'));
+                        }
+
+                    }
+                }else {
+                    error_log('分配教室失败!', 3, '/Users/yuyang/PHP/jkao/monitor/log/error.log');
+                    if ($id) {
+                        echo json_encode(array('s'=>'noroom'));
                     }
                 }
 
 			}
 		}else {
+            echo json_encode(array('s'=>'norequest'));
 			return null;
 		}
 	}
@@ -390,7 +425,7 @@ class Root extends CI_Controller {
             $res = $this->chooseOneTeacher($v);
             //如果老师不够，直接返回null并退出
             if (!$res) {
-                reutrn null;
+                return null;
                 break;
             }
             $res_t .= ','.$res;
@@ -436,7 +471,7 @@ class Root extends CI_Controller {
                         if ($t_arr[$j]->monitor_times > $t_arr[$j+1]->monitor_times) {
                             $temp = $t_arr[$j];
                             $t_arr[$j] = $t_arr[$j+1];
-                            $t_arr[$j+1] = $temp
+                            $t_arr[$j+1] = $temp;
                         }
                     }
                 }
@@ -471,14 +506,17 @@ class Root extends CI_Controller {
         $room_arr = array();
         $count = 1;
         //10倍分率,已足够
-        foreach($i=1;$i<10;$i++) {
+        for($i=1;$i<10;$i++) {
             $res = $this->chooseOneRoom($v, $i);
             //如果分到了教室，则找到了分教室的标准
             if ($res) {
                 $room_arr[0] = $res;
                 for($j=1;$j<$count;$j++) {
                     $res = $this->chooseOneRoom($v, $i);
-                    $room_arr[$j] = $res;
+                    //内部不可再做分率
+                    if ($res) {
+                        $room_arr[$j] = $res;
+                    }
                 }
                 break;
             }else {
@@ -526,7 +564,7 @@ class Root extends CI_Controller {
                     return $room_arr[$m]->id;
                 }else {
                     //如果已经有占领，则判断其时间与请求时间是否冲突
-                    $time = $room_arr[$m]->time
+                    $time = $room_arr[$m]->time;
                         $time_arr = explode(',',$time);
                     if ($m == 0) {
                         $date_array = $time;
@@ -575,6 +613,13 @@ class Root extends CI_Controller {
                     );
                     $where = array($room_arr[0]->id);
                     $this->root_model->alterData($up_dt, $where, 'room');
+                    //更改申请期望时间
+                    $up_re = array(
+                        'exam_start_time' => $start_t,
+                        'exam_end_time' => $end_t,
+                    );
+                    $where = array($v->id);
+                    $this->root_model->alterData($up_re, $where, 'request');
                     return $room_arr[0]->id;
                 }
             }

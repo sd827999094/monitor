@@ -38,8 +38,8 @@ class AdminServer extends CI_Controller {
 		$this->arr['title'] = '教师后台管理';
 		$this->load->view('header/header', $this->arr);
 		$sess = $this->session->all_userdata();
-		if (!isset($sess['teacher_id']) || !isset($sess['teacher_pass'])) {
-			$user = $this->input->post();
+		$user = $this->input->post();
+        if ($user['teacher_id']) {
 		
 			$res = $this->root_model->get($user['teacher_id'], $user['teacher_pass'], 'teacher');
 			if ($res) {
@@ -178,7 +178,19 @@ class AdminServer extends CI_Controller {
 	public function teacherInfo($id) {
 		$this->arr['title'] = '教师信息';
 		$res = $this->root_model->searchById($id, 'teacher');
-		$this->arr['status'] = ($res[0]->status=='1')?'空闲':'忙碌';
+        $now = time();
+        $str = $res[0]->busyDate;
+        $arr = explode(',', $str);
+        $status = '空闲';
+        foreach($arr as $v) {
+            $v_t = $v-$v%86400;
+            $time = $now - $now%86400;
+            if ($time == $v_t) {
+                $status = '忙碌';
+                break;
+            }
+        }
+		$this->arr['status'] = $status;
 		$this->load->view('header/header', $this->arr);
 		$this->load->view('admin/teacherInfo');
 		$this->load->view('footer/footer');
@@ -202,6 +214,8 @@ class AdminServer extends CI_Controller {
 			$up_data = array('teacher_pass'=>$newPass);
 			
 			$this->root_model->update($up_data, $sess['teacher_id'], 'teacher');
+            $this->session->unset_userdata('teacher_id');
+            $this->session->unset_userdata('teacher_pass');
 			echo json_encode(array('s'=>'ok'));
 		}
 	}
@@ -210,10 +224,26 @@ class AdminServer extends CI_Controller {
 	public function changeStatus(){
 		$status = $this->input->post();
 		$sess = $this->session->all_userdata();
-		
-		$up_data = array(
-			'status' => $status['status']
-		);
+		$sql = 'select * from teacher where teacher_id='.$sess['teacher_id'];
+        $res_q = $this->root_model->query_info($sql);
+
+        $busy = '';
+        if ($res_q) {
+            foreach($res_q as $v) {
+                $busy .= $v->busyDate;
+            }
+        }
+        ini_set('date.timezone','Asia/Shanghai');
+        $busy_date = strtotime($status['busyDate']);
+        if (!$busy) {
+            $up_data = array(
+                'busyDate' => ($busy_date),
+            );
+        }else {
+            $up_data = array(
+                'busyDate' => ($busy.','. $busy_date),
+            );
+        }
 		$res = $this->root_model->update($up_data, $sess['teacher_id'], 'teacher');
 		echo json_encode(array('s'=>'ok'));
 	}
@@ -232,6 +262,7 @@ class AdminServer extends CI_Controller {
 		$req = $this->input->post();
 		$classNum = $req['classNum'];
 		$studentNum = $req['studentNum'];
+        ini_set('date.timezone','Asia/Shanghai');
 		$start_t = strtotime($req['start_t']);
 		$end_t = strtotime($req['end_t']);
 		$className = $req['className'];

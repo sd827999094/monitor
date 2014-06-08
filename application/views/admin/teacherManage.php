@@ -17,8 +17,8 @@
 				<th>教师名字</th>
 				<th>性别</th>
 				<th>系别</th>
-				<th>监考开始时间</th>
-				<th>监考结束时间</th>
+				<th>忙碌时间</th>
+				<th>监考次数</th>
 			</tr>
 			<?php 
 				foreach($teacherInfo as $v) {
@@ -27,8 +27,8 @@
 						<td>{$v->name}</td>
 						<td>{$v->sex}</td>
 						<td>{$v->department}</td>
-						<td>{$v->start_work_time}</td>
-						<td>{$v->end_work_time}</td>
+                        <td>{$v->busyDate}</td>
+                        <td>{$v->monitor_times}</td>
 					</tr>";
 				}
 			?>
@@ -41,8 +41,6 @@
 	<p>教师姓名:<input type="text" value="" id="teacherName" /></p>
 	<p>性别:<input type="text" value="" id="sex" /></p>
 	<p>系别:<input type="text" value="" id="department"></p>
-	<p>监考开始时间:<input type="text" value="" id="start_work_time" /></p>
-	<p>监考结束时间:<input type="text" value="" id="end_work_time" /></p>
 	<p><input type="button" value="提交" id="sub" />&nbsp;&nbsp;&nbsp;<input type="button" value="取消" id="cancel" /></p>
 </div>
 <div id='alterDemo' style="display:none">
@@ -52,8 +50,6 @@
     <option value='2'>女</option>
 </select></p>
     <p>系别:<input type='text' value='' id='alterDep' /></p>
-    <p>监考开始时间:<input type='text' value='' id='alterStartTime' /></p>
-    <p>监考结束时间:<input type='text' value='' id='alterEndTime' /></p>
     <p><input type='button' value='修改' id='alter_sub' /><input type='button' value='取消' id='cancel_sub' /></p>
 </div>
 <script type="text/javascript">
@@ -70,8 +66,6 @@
         });
         var sex = $('#alterSex option:selected').val();
         var depart = $('#alterDep').val();
-        var start_t = $('alterStartTime').val();
-        var end_t = $('alterEndTime').val();
 
         var data = {};
         data['teacher_id'] = alter_id;
@@ -80,12 +74,6 @@
         }
         if (depart) {
             data['department'] = depart;
-        }
-        if (start_t) {
-            data['start_work_time'] = start_t;
-        }
-        if (end_t) {
-            data['end_work_time'] = end_t;
         }
 
         $.ajax({
@@ -130,15 +118,13 @@
 		var teacherName = $('#teacherName').val();
 		var sex = $('#sex').val();
 		var department = $('#department').val();
-		var start_work_time = $('#start_work_time').val();
-		var end_work_time = $('#end_work_time').val();
 		
 		
 		$.ajax({
 			dataType: 'json',
 			type:'post',
 			url:'<?php echo base_url('index.php')."/admin/root/addteacher"; ?>',
-			data:{'teacherId':teacherId,'teacherName':teacherName, 'sex':sex, 'department':department, 'start_work_time':start_work_time, 'end_work_time':end_work_time},
+			data:{'teacherId':teacherId,'teacherName':teacherName, 'sex':sex, 'department':department},
 			success: function(data){
 				if (data.s == 'ok') {
 					alert('添加教师成功!');

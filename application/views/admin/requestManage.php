@@ -59,6 +59,32 @@
 			},
 		});
 	});
+    $('.pass_a').click(function(){
+        var str = $(this).parent().parent().children('.selected').text();
+        $.ajax({
+            url:"<?php echo base_url('index.php').'/admin/root/dealRequestByRoot'; ?>",
+            dataType:'json',
+            type:'post',
+            data:{'id':str},
+            success:function(data) {
+                if (data.s == 'ok') {
+                    alert('通过!');
+                    location.reload();
+                    return;
+                }else if(data.s == 'noteacher'){
+                    alert('教师资源不足');
+                    return;
+                }else if(data.s == 'noroom'){
+                    alert('教室资源不足!');
+                    return;
+                }else {
+                    alert('处理无法完成，可能因为异常导致');
+                    location.reload();
+                    return;
+                }
+            }
+        });
+    });
 </script>
 <style type="text/css" media="screen">
 	table.gridtable {
