@@ -351,12 +351,25 @@ class Root extends CI_Controller {
                         );
                         $where = array($v->id);
                         $this->root_model->alterData($up_status, $where, 'request');
+                        $sql_f = 'select name from teacher where teacher_id='.$v->teacher_id;
+                        $res_f = $this->root_model->query_info($sql_f);
+                        if ($res_f) {
+                            foreach($res_f as $vf) {
+                                $teacher_name = $vf->name;
+                            }
+                        }
 
                         //写入最后结果表
                         $insert = array(
                             'request_id' => $v->id,
                             'room_id' =>$class_str,
                             'monitor_id' => $monitor_id, 
+                            'class_name' => $v->class_name,
+                            'class_id' => $v->class_id,
+                            'teacher_id' => $v->teacher_id,
+                            'start_t' => $v->exam_start_time,
+                            'end_t' => $v->exam_end_time,
+                            'teacher_name' => $teacher_name,
                         );
                         $this->root_model->insertInfo($insert, 'res');
                         if ($id) {
