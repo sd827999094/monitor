@@ -72,7 +72,6 @@ class Show extends CI_Controller {
                         $v_arr['start_t'] = $v_rq->exam_start_time;
                         $v_arr['end_t'] = $v_rq->exam_end_time;
                     }
-                }
                 $sql_tc = 'select name from teacher where teacher_id='.$v_arr['teacher_id'];
                 $res_tc = $this->root_model->query_info($sql_tc);
                 if ($res_tc) {
@@ -112,6 +111,7 @@ class Show extends CI_Controller {
                     $str = substr($str, 0, strlen($str)-1);
                 }
                 $v_arr['monitor_name'] = $str;
+                }
 
                 $arr_list[] = $v_arr;
             }

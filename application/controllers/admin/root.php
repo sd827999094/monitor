@@ -149,7 +149,7 @@ class Root extends CI_Controller {
 	public function delClass() {
 		$del_id = $this->input->post();
 		$arr_del = explode(',', $del_id['del_id']);
-		$res = $this->root_model->del('room', 'id', $del_id);
+		$res = $this->root_model->del('room', 'id', $arr_del);
 		if ($res) {
 			echo json_encode(array('s'=>'ok'));
 		}else {
@@ -309,12 +309,12 @@ class Root extends CI_Controller {
 	//删除
 	public function delReq() {
 		$req_id = $this->input->post('id');
-		//先判断系统有没有处理，如果处理过了，驳回操作
 		
 		$arr = array($req_id);
 		
 		$res = $this->root_model->del('request','id', $arr);
-		if ($res) {
+        $res_r = $this->root_model->del('res', 'request_id', $arr);
+		if ($res && $res_r) {
 			echo json_encode(array('s' => 'ok'));
 		} else {
 			echo json_encode(array('s' => 'error'));
@@ -358,7 +358,38 @@ class Root extends CI_Controller {
                                 $teacher_name = $vf->name;
                             }
                         }
+                        $str_tea = '';
+                        $arr_mon = explode(',',$monitor_id);
+                        foreach($arr_mon as $v_mon) {
+                            $sql_rom = 'select name from teacher where teacher_id='.$v_mon;
+                            $res_rom = $this->root_model->query_info($sql_rom);
+                            if ($res_rom) {
+                                foreach($res_rom as $vr) {
+                                    $str_tea .= $vr->name;
+                                    $str_tea .= ',';
+                                }
+                            }
+                        }
+                        if ($str_tea) {
+                           $str_tea = substr($str_tea, 0, strlen($str_tea)-1);
 
+                        }
+                        
+                        $str_rom = '';
+                        foreach($arr_class as $v_rom) {
+                            $sql_rom = 'select name from room where id='.$v_rom;
+                            $res_rom = $this->root_model->query_info($sql_rom);
+                            if ($res_rom) {
+                                foreach($res_rom as $vr) {
+                                    $str_rom .= $vr->name;
+                                    $str_rom .= ',';
+                                }
+                            }
+                        }
+                        if ($str_rom) {
+                           $str_rom = substr($str_rom, 0, strlen($str_rom)-1);
+
+                        }
                         //写入最后结果表
                         $insert = array(
                             'request_id' => $v->id,
@@ -370,6 +401,8 @@ class Root extends CI_Controller {
                             'start_t' => $v->exam_start_time,
                             'end_t' => $v->exam_end_time,
                             'teacher_name' => $teacher_name,
+                            'room_name' =>$str_rom,
+                            'monitor_name'=> $str_tea,
                         );
                         $this->root_model->insertInfo($insert, 'res');
                         if ($id) {
@@ -457,7 +490,7 @@ class Root extends CI_Controller {
                 $busyDate = $teacher_v->busyDate;
                 //如果该老师不忙碌，挑选出来
                 if (!$busyDate) {
-                    $t_arr = $teacher_v;
+                    $t_arr[] = $teacher_v;
                     continue;
                 }else {
                     //如果该老师忙碌，但并不在这一天，加入
@@ -472,7 +505,7 @@ class Root extends CI_Controller {
                         }
                     }
                     if ($bool_t) {
-                        $t_arr = $teacher_v;
+                        $t_arr[] = $teacher_v;
                     }
                 }
             }
@@ -490,8 +523,8 @@ class Root extends CI_Controller {
                 }
                 //选出监考次数最少的老师
                 $up_t = array(
-                    'busyDate' => $t_arr[0]->busyDate.','.$v->exam_start_time,
-                    'monitor_times' => ($t_arr[0]->monitor_times+1),
+                    'busyDate' => ($t_arr[0]->busyDate).','.$v->exam_start_time,
+                    'monitor_times' => ($t_arr[0]->monitor_times)+1,
                 );
                 $where = array($t_arr[0]->teacher_id);
                 $this->root_model->alterData($up_t, $where, 'teacher');

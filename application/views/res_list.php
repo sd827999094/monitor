@@ -33,7 +33,7 @@
                         <td>{$v['room_name']}</td>
                         <td>{$v['monitor_name']}</td>
 					</tr>";
-				}
+                }
 			?>
 		</table>
 	</div>
